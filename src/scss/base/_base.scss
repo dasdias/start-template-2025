@@ -1,0 +1,37 @@
+// Then import Bootstrap
+html,
+body {
+  min-width: 320px;
+}
+
+html {
+  font-size: 10px;
+  line-height: 1.4;
+  height: 100%;
+}
+
+body {
+  font-size: 1.6rem;
+  /* 10px * 1.6 = 16px */
+  // font-family: 'Lato', sans-serif;
+  height: 100%;
+  background-color: tomato;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+// @font-face {
+//   font-family: "rouble";
+//   src: url("/fonts/rouble.otf") format("opentype");
+// }
+
+// .rub {
+//   font-family: "rouble", sans-serif;
+// }
