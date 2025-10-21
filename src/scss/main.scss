@@ -1,9 +1,29 @@
 // Vars
-@use "./vars/variables";
+@use "./vars/variables" as *; //  as * - делает стили глобальными
+
+
+// Utils
+
+@use "../../node_modules/bootstrap/scss/bootstrap" with ($grid-breakpoints: (xs: 0,
+    sm: 576px,
+    md: 768px,
+    lg: 992px,
+    xl: 1200px,
+    xxl: 1400px), $container-max-widths: (sm: 540px,
+    md: 720px,
+    lg: 960px,
+    xl: 1140px,
+    xxl: 1320px)); // переопределяем переменные сетки контейнера
+
 
 // Base
 @use "./base/base";
 
 
-// Utils
-@use "./utils/utils";
+
+// Fonts
+@use "./fonts/_fonts";
+
+// header_footer
+@use "./header_footer/_header";
+@use "./header_footer/_footer";

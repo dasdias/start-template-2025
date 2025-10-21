@@ -101,7 +101,7 @@ export const scss = () => {
       })
     )
     .pipe(gulpIf(dev, sourcemaps.init())) // инициализируем карту scss
-    .pipe(scssToCss()) // обрабатываем scss и в случае ошибки выводим в консоль
+    .pipe(scssToCss({ quietDeps: true })) // обрабатываем scss. Директива { quietDeps: true } отключает уведомления о запрете @import в scss файлах
     .pipe(gulpIf(!dev, autoprefixer({ // обрабатываем автопрефиксером
       overrideBrowserslist: ["last 1 versions"]
     })))
@@ -220,7 +220,7 @@ export const server = () => {
   gulp.watch(path.watch.js, js) // следим за файлами js и при изменении запускаем таск js
   gulp.watch(path.watch.img, images) // следим за файлами images и при изменении запускаем таск images
   gulp.watch(path.src.libs, libs) // следим за файлами images и при изменении запускаем таск images
-  // gulp.watch(path.src.fonts, fonts) // следим за файлами images и при изменении запускаем таск images
+  gulp.watch(path.src.fonts, fonts) // следим за файлами images и при изменении запускаем таск images
   // gulp.watch(path.src.doc, doc) // следим за файлами images и при изменении запускаем таск images
   gulp.watch(path.src.mail, mail) // следим за файлами images и при изменении запускаем таск images
   // gulp.watch(path.src.video, video) // следим за файлами images и при изменении запускаем таск images
@@ -234,7 +234,7 @@ const develop = (ready) => { // функция вызывающая сборку
 }
 
 // export const base = gulp.parallel(html, scss, js, images, libs, video, doc, mail, fonts) // запускаем паралельные таски
-export const base = gulp.parallel(html, scss, js, images, libs, mail) // запускаем паралельные таски
+export const base = gulp.parallel(html, scss, js, images, libs, mail, fonts) // запускаем паралельные таски
 
 export const build = gulp.series(clear, base); // Собирает сборку на продакшн
 

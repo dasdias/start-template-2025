@@ -1,4 +1,54 @@
-// Then import Bootstrap
+:root {
+  --dark-green: #0b9490;
+  --dark-green1: #207f7d;
+  --dark-geen2: #135452;
+  --dark-green3: #0a3736;
+  --light-green: #a5f0cf;
+  --light-green1: #95e2c0;
+  --lignt-green2: #71eab5;
+  --light-green3: #62d6a3;
+  --orange: #f08100;
+  --magenta: #c90043;
+  --green: #00c971;
+  --white: #fff;
+  --dark-grey: #232f2e;
+  --dark-grey1: #485251;
+  --dark-grey2: #778482;
+  --blue-grey: #e3efef;
+  --blue-grey1: #d4e9e7;
+  --blue-grey2: #c5d9d9;
+  --blue-grey4: #ecf6f6;
+  --grey: #f6f6f6;
+  --grey2: #d6e0e0;
+  --blue: #3c95e8;
+  --yellow: #ffe047;
+  --control-default-default: #95e2c0;
+  --dark-green: #135452;
+  --white: #fff;
+  --content-default: #000;
+  --grey1: #e6e6e6;
+  --grey2: #d9d9d9;
+  --grey3: #c7c7c7;
+  --grey4: #969696;
+  --grey5: #6f6f6f;
+  --grey6: #3e3e3e;
+  --dark-green1: #207f7d;
+  --dark-green2: #387372;
+  --dark-green3: #0b9490;
+  --light-green1: #a5f0cf;
+  --control-default-hover: #7dceaa;
+  --light-green3: #71eab5;
+  --orange: #f08100;
+  --grey: #efefef;
+  --control-dark-default: #000;
+
+  --font-family: "Manrope", sans-serif;
+  --second-family: "Benzin-Regular", sans-serif;
+  // --second-family: "Benzin", sans-serif;
+  --third-family: "Benzin-ExtraBold", sans-serif;
+  --font3: "Benzin-Bold", sans-serif;
+}
+
 html,
 body {
   min-width: 320px;
@@ -16,6 +66,12 @@ body {
   // font-family: 'Lato', sans-serif;
   height: 100%;
   background-color: tomato;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-container {
+  flex-grow: 1;
 }
 
 * {
