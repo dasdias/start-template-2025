@@ -216,7 +216,7 @@ export const server = () => {
   gulp.watch(path.watch.html, html) // следим за файлами html и при изменении запускаем таск html
   gulp.watch(path.watch.scss, scss) // следим за файлами scss и при изменении запускаем таск scss
   gulp.watch(path.watch.js, js) // следим за файлами js и при изменении запускаем таск js
-  // gulp.watch(path.watch.img, images) // следим за файлами images и при изменении запускаем таск images
+  gulp.watch(path.watch.img, images) // следим за файлами images и при изменении запускаем таск images
   gulp.watch(path.src.libs, libs) // следим за файлами images и при изменении запускаем таск images
   gulp.watch(path.src.fonts, fonts) // следим за файлами images и при изменении запускаем таск images
   // gulp.watch(path.src.doc, doc) // следим за файлами images и при изменении запускаем таск images
