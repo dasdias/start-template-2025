@@ -9,7 +9,7 @@ import gulpHtmlmin from 'gulp-htmlmin'; // минимизирует файлы
 import sourcemaps from 'gulp-sourcemaps'; // добавляет sourcemaps карту
 import gulpIf from 'gulp-if'; // запускает команды по условию
 
-import sass from 'sass'; // работает с sass файлами
+import * as sass from 'sass'; // работает с sass файлами
 import gulpSass from 'gulp-sass'; // принимает sass или scss файлы и передаёт в sass для последующей обработки.
 import sassGlob from 'gulp-sass-glob'; // автоматическое подключение sсss файлов
 import gcmq from 'gulp-group-css-media-queries'; // груперует медиа запросы
@@ -154,16 +154,14 @@ export const js = () => {
 
 export const images = () => {
   return gulp
-    .src(path.src.img)
+    .src(path.src.img, { encoding: false })
     .pipe(gulp.dest(path.dist.img))
-    .pipe(browserSync.stream({
-      once: true,
-    }))
+    .pipe(browserSync.stream({ once: true, }))
 };
 
 export const libs = () => {
   return gulp
-    .src(path.src.libs)
+    .src(path.src.libs, { encoding: false })
     .pipe(gulp.dest(path.dist.libs))
     .pipe(browserSync.stream({
       once: true,
@@ -172,7 +170,7 @@ export const libs = () => {
 
 export const fonts = () => {
   return gulp
-    .src(path.src.fonts)
+    .src(path.src.fonts, { encoding: false })
     .pipe(gulp.dest(path.dist.fonts))
     .pipe(browserSync.stream({
       once: true,
@@ -181,7 +179,7 @@ export const fonts = () => {
 
 // export const video = () => {
 //   return gulp
-//     .src(path.src.video)
+//     .src(path.src.video,  { encoding: false })
 //     .pipe(gulp.dest(path.dist.video))
 //     .pipe(browserSync.stream({
 //       once: true,
@@ -190,21 +188,21 @@ export const fonts = () => {
 
 export const doc = () => {
   return gulp
-    .src(path.src.doc)
+    .src(path.src.doc, { encoding: false })
     .pipe(gulp.dest(path.dist.doc))
     .pipe(browserSync.stream({
       once: true,
     }))
 };
 
-export const mail = () => {
-  return gulp
-    .src(path.src.mail)
-    .pipe(gulp.dest(path.dist.base))
-    .pipe(browserSync.stream({
-      once: true,
-    }))
-};
+// export const mail = () => {
+//   return gulp
+//     .src(path.src.mail)
+//     .pipe(gulp.dest(path.dist.base))
+//     .pipe(browserSync.stream({
+//       once: true,
+//     }))
+// };
 
 export const server = () => {
   browserSync.init({
@@ -218,11 +216,11 @@ export const server = () => {
   gulp.watch(path.watch.html, html) // следим за файлами html и при изменении запускаем таск html
   gulp.watch(path.watch.scss, scss) // следим за файлами scss и при изменении запускаем таск scss
   gulp.watch(path.watch.js, js) // следим за файлами js и при изменении запускаем таск js
-  gulp.watch(path.watch.img, images) // следим за файлами images и при изменении запускаем таск images
+  // gulp.watch(path.watch.img, images) // следим за файлами images и при изменении запускаем таск images
   gulp.watch(path.src.libs, libs) // следим за файлами images и при изменении запускаем таск images
   gulp.watch(path.src.fonts, fonts) // следим за файлами images и при изменении запускаем таск images
   // gulp.watch(path.src.doc, doc) // следим за файлами images и при изменении запускаем таск images
-  gulp.watch(path.src.mail, mail) // следим за файлами images и при изменении запускаем таск images
+  // gulp.watch(path.src.mail, mail) // следим за файлами images и при изменении запускаем таск images
   // gulp.watch(path.src.video, video) // следим за файлами images и при изменении запускаем таск images
 };
 
@@ -234,7 +232,7 @@ const develop = (ready) => { // функция вызывающая сборку
 }
 
 // export const base = gulp.parallel(html, scss, js, images, libs, video, doc, mail, fonts) // запускаем паралельные таски
-export const base = gulp.parallel(html, scss, js, images, libs, mail, fonts) // запускаем паралельные таски
+export const base = gulp.parallel(html, scss, js, images, libs, fonts) // запускаем паралельные таски
 
 export const build = gulp.series(clear, base); // Собирает сборку на продакшн
 
