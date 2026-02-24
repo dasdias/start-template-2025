@@ -7,6 +7,7 @@
 *.swo
 *.swp
 *.vi
+*.zip
 *~
 *.sass-cache
 *.sublime-project
@@ -18,6 +19,8 @@ dist/
 .tmp/
 .idea
 .vscode
+.osp
+bitrix
 
 # OS or Editor folders
 .DS_Store
