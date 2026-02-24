@@ -11,24 +11,26 @@ import gulpIf from 'gulp-if'; // запускает команды по усло
 
 import * as sass from 'sass'; // работает с sass файлами
 import gulpSass from 'gulp-sass'; // принимает sass или scss файлы и передаёт в sass для последующей обработки.
-import sassGlob from 'gulp-sass-glob'; // автоматическое подключение sсss файлов
 import gcmq from 'gulp-group-css-media-queries'; // груперует медиа запросы
 import concat from 'gulp-concat'; // объяденяет файлы
 import htmlmin from 'gulp-htmlmin';
 import cleanCSS from 'gulp-clean-css';
+import { existsSync, readdirSync } from 'fs';
+import * as nodePath from 'path';
 
 // JS
 import webpack from 'webpack-stream';
 
 let dev = false;
+const fast = process.argv.includes('--fast') || process.env.FAST_BUILD === '1';
 
 const path = {
   src: {
     base: 'src/',
     html: 'src/html/*.html',
-    scss: 'src/scss/main.scss',
+    scss: 'src/scss/*.scss',
     js: 'src/js/**/*.js',
-    img: 'src/images/**/*.{jpg,svg,jpeg,png,gif,webp,ico}',
+    img: 'src/images/**/*.{jpg,svg,jpeg,png,gif,webp,ico,webmanifest}',
     assets: ['src/fonts/**/*.*', 'src/libs/**/*.*', 'src/video/**/*.*'],
     libs: 'src/libs/**/*.*',
     fonts: 'src/fonts/**/*.*',
@@ -71,7 +73,7 @@ export const html = () => {
     )
     .pipe(fileinclude({ prefix: '@@' }))
     .pipe(gulpIf(!dev, htmlmin({ // проверяем с помощью gulpIf если первый аргумент будет true то вызываем таск во втором аргументе. 
-      removeComments: true, // убираем комментарии
+      removeComments: false, // убираем комментарии
       collapseWhitespace: true, // убираем пробелы
     })))
     .pipe(gulp.dest(path.dist.html)) // копируем обработанные файлы в папку сборки
@@ -83,12 +85,6 @@ const scssToCss = gulpSass(sass);
 export const scss = () => {
   return gulp
     .src(path.src.scss)
-    .pipe(sassGlob({ // подключаем scss файлы по маске
-      ignorePaths: [
-        '**/**/_old_*.scss', // не отслеживаем файлы которые попадают под маску
-      ]
-    })
-    )
     .pipe(
       plumber({
         errorHandler: notify.onError(function (err) {
@@ -102,12 +98,12 @@ export const scss = () => {
     )
     .pipe(gulpIf(dev, sourcemaps.init())) // инициализируем карту scss
     .pipe(scssToCss({ quietDeps: true })) // обрабатываем scss. Директива { quietDeps: true } отключает уведомления о запрете @import в scss файлах
-    .pipe(gulpIf(!dev, autoprefixer({ // обрабатываем автопрефиксером
+    .pipe(gulpIf(!dev && !fast, autoprefixer({ // обрабатываем автопрефиксером
       overrideBrowserslist: ["last 1 versions"]
     })))
-    .pipe(gulpIf(!dev, gcmq()))// объединяем медиа запросы
+    .pipe(gulpIf(!dev && !fast, gcmq()))// объединяем медиа запросы
     .pipe(gulpIf(dev, sourcemaps.write(".")))
-    .pipe(gulpIf(!dev, cleanCSS({
+    .pipe(gulpIf(!dev && !fast, cleanCSS({
       2: {
         specialComments: 0,
       },
@@ -116,37 +112,70 @@ export const scss = () => {
     .pipe(browserSync.stream())
 };
 
-const configWebpack = {
-  mode: dev ? 'development' : 'production',
-  devtool: dev ? 'eval-sourse-map' : false,
-  optimization: {
-    minimize: false,
-  },
-  output: {
-    filename: 'script.js'
-  },
-  module: {
-    rules: []
+const jsSourceDirectory = nodePath.join(path.src.base, 'js');
+
+const collectJsEntries = () => {
+  if (!existsSync(jsSourceDirectory)) {
+    return {};
   }
+
+  const entries = {};
+  const dirents = readdirSync(jsSourceDirectory, { withFileTypes: true });
+
+  dirents.forEach((dirent) => {
+    if (!dirent.isFile() || nodePath.extname(dirent.name) !== '.js') {
+      return;
+    }
+
+    const entryName = dirent.name.replace(/\.js$/, '');
+    entries[entryName] = nodePath.resolve(jsSourceDirectory, dirent.name);
+  });
+
+  return entries;
 };
 
-if (!dev) {
-  configWebpack.module.rules.push({
-    test: /\.(js)$/,
-    exclude: /(node_modules)/,
-    loader: 'babel-loader',
-    options: {
-      presets: ['@babel/preset-env'],
-      plugins: ['@babel/plugin-transform-runtime']
+const createWebpackConfig = () => {
+  const config = {
+    mode: dev ? 'development' : 'production',
+    devtool: dev ? 'eval-source-map' : false,
+    optimization: {
+      minimize: false,
+    },
+    entry: collectJsEntries(),
+    output: {
+      filename: '[name].js'
+    },
+    module: {
+      rules: []
     }
-  })
-}
+  };
+
+  if (!dev) {
+    config.module.rules.push({
+      test: /\.(js)$/,
+      exclude: /(node_modules)/,
+      loader: 'babel-loader',
+      options: {
+        presets: ['@babel/preset-env'],
+        plugins: ['@babel/plugin-transform-runtime']
+      }
+    });
+  }
+
+  return config;
+};
 
 export const js = () => {
+  const webpackConfig = createWebpackConfig();
+
+  if (!Object.keys(webpackConfig.entry).length) {
+    return Promise.resolve();
+  }
+
   return gulp
-    .src(path.src.js)
+    .src(path.src.js, { allowEmpty: true })
     .pipe(plumber())
-    .pipe(webpack(configWebpack))
+    .pipe(webpack(webpackConfig))
     // .pipe(concat('all.js'))
     .pipe(gulp.dest(path.dist.js))
     .pipe(browserSync.stream())
@@ -156,7 +185,9 @@ export const images = () => {
   return gulp
     .src(path.src.img, { encoding: false })
     .pipe(gulp.dest(path.dist.img))
-    .pipe(browserSync.stream({ once: true, }))
+    .pipe(browserSync.stream(
+      // { once: true, }
+    ))
 };
 
 export const libs = () => {
@@ -195,14 +226,14 @@ export const doc = () => {
     }))
 };
 
-// export const mail = () => {
-//   return gulp
-//     .src(path.src.mail)
-//     .pipe(gulp.dest(path.dist.base))
-//     .pipe(browserSync.stream({
-//       once: true,
-//     }))
-// };
+export const mail = () => {
+  return gulp
+    .src(path.src.mail, { encoding: false })
+    .pipe(gulp.dest(path.dist.base))
+    .pipe(browserSync.stream({
+      once: true,
+    }))
+};
 
 export const server = () => {
   browserSync.init({
@@ -220,7 +251,7 @@ export const server = () => {
   gulp.watch(path.src.libs, libs) // следим за файлами images и при изменении запускаем таск images
   gulp.watch(path.src.fonts, fonts) // следим за файлами images и при изменении запускаем таск images
   // gulp.watch(path.src.doc, doc) // следим за файлами images и при изменении запускаем таск images
-  // gulp.watch(path.src.mail, mail) // следим за файлами images и при изменении запускаем таск images
+  gulp.watch(path.src.mail, mail) // следим за файлами images и при изменении запускаем таск images
   // gulp.watch(path.src.video, video) // следим за файлами images и при изменении запускаем таск images
 };
 
@@ -232,8 +263,9 @@ const develop = (ready) => { // функция вызывающая сборку
 }
 
 // export const base = gulp.parallel(html, scss, js, images, libs, video, doc, mail, fonts) // запускаем паралельные таски
-export const base = gulp.parallel(html, scss, js, images, libs, fonts) // запускаем паралельные таски
+export const base = gulp.parallel(html, scss, js, images, libs, mail, fonts) // запускаем паралельные таски
 
 export const build = gulp.series(clear, base); // Собирает сборку на продакшн
 
 export default gulp.series(develop, clear, base, server);
+
